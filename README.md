@@ -1,4 +1,4 @@
-![Uploading r.png…]()
+![r](https://github.com/user-attachments/assets/41d0345a-9831-4e66-9d63-847141c9e6bd)
 
 # 🧠 RAG Chatbot with Your Own Documents  
 ### Built with LangChain + Ollama + Chroma
@@ -29,3 +29,12 @@ source venv/bin/activate  # or venv\Scripts\activate on Windows
 
 # Install dependencies
 pip install -r requirements.txt
+```
+
+---
+## Add enviorenment variables
+```bash
+model_name= <model_name>
+temp= <model_temperature>
+base_url= <ollama_running_host>
+```
