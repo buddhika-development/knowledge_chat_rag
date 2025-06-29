@@ -1,2 +1,4 @@
 .env
 **/__pycache__
+document_vector
+documents
