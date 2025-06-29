@@ -1,3 +1,5 @@
+![Uploading r.png…]()
+
 # 🧠 RAG Chatbot with Your Own Documents  
 ### Built with LangChain + Ollama + Chroma
 
