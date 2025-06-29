@@ -34,16 +34,19 @@ def save_document(file, file_dir):
         file_path -> path to save the file
     """
 
-    file_path = os.path.join(file_dir, file.name)
-    
-    # check path is already exists or not
-    os.makedirs(file_dir, exist_ok= True)
+    try:
+        file_path = os.path.join(file_dir, file.name)
+        
+        # check path is already exists or not
+        os.makedirs(file_dir, exist_ok= True)
 
-    with open(file_path, "wb") as f:
-        f.write(file.getbuffer())
-    
-    return file_path
-
+        with open(file_path, "wb") as f:
+            f.write(file.getbuffer())
+        
+        return file_path
+    except Exception as e:
+        print(f"Something went wrong in document saving process.... {e}")
+        return None
 
 
 def extract_content(file_path):
@@ -60,18 +63,22 @@ def extract_content(file_path):
         extracted content        
     """
     
-    document_reader_object = PdfReader(file_path)
-    document_page_count = len(document_reader_object.pages)
-    document_content = ""
+    try:
+        document_reader_object = PdfReader(file_path)
+        document_page_count = len(document_reader_object.pages)
+        document_content = ""
 
-    for i in range(0, document_page_count):
-        current_page = document_reader_object.pages[i]
-        page_content = current_page.extract_text()
+        for i in range(0, document_page_count):
+            current_page = document_reader_object.pages[i]
+            page_content = current_page.extract_text()
 
-        if page_content:
-            document_content += page_content.strip().replace("\t","").replace("\n","")
-    
-    return document_content
+            if page_content:
+                document_content += page_content.strip().replace("\t","").replace("\n","")
+        
+        return document_content
+    except Exception as e:
+        print(f"Something went wrong in text extraction process... {e}")
+        return None
 
 
 def document_text_splitter(content):
@@ -87,14 +94,18 @@ def document_text_splitter(content):
     return:
         splitted_document
     """
-    
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size = 2000,
-        chunk_overlap = 400
-    )
+    try:
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size = 2000,
+            chunk_overlap = 400
+        )
 
-    splitted_documents = text_splitter.create_documents([content])
-    return splitted_documents
+        splitted_documents = text_splitter.create_documents([content])
+        return splitted_documents
+    except Exception as e:
+        print(f"Something went wrong in text splitting process.. {e}")
+        return None
+    
 
 
 def embedding_function():
@@ -105,16 +116,18 @@ def embedding_function():
         this function is responsible for create the embeddings
     """
 
-    model_name = "sentence-transformers/all-mpnet-base-v2"
-    model_kwargs = {'device' : 'cpu'}
-    
-    embedder = HuggingFaceEmbeddings(
-        model_name = model_name,
-        model_kwargs = model_kwargs
-    )
+    try:
+        model_name = "sentence-transformers/all-mpnet-base-v2"
+        model_kwargs = {'device' : 'cpu'}
+        
+        embedder = HuggingFaceEmbeddings(
+            model_name = model_name,
+            model_kwargs = model_kwargs
+        )
 
-    return embedder
-
+        return embedder
+    except Exception as e:
+        print(f"Something went wrongi in text embedding function... {e}")
 
 
 def create_vectore_store(chunks,embedding_function,file_path):
@@ -124,14 +137,15 @@ def create_vectore_store(chunks,embedding_function,file_path):
     does:
         This function is responsible for create vectore database for upcomming operations
     """ 
-
-    if not os.path.exists(file_path):
-        vector_store = Chroma.from_documents(
-            documents= chunks,
-            embedding= embedding_function,
-            persist_directory= file_path
-        )
-
+    try:
+        if not os.path.exists(file_path):
+            vector_store = Chroma.from_documents(
+                documents= chunks,
+                embedding= embedding_function,
+                persist_directory= file_path
+            )
+    except Exception as e:
+        print(f"Something went wrong in vectore store creation process... {e}")
 
 
 def access_vector_database_retriever(embedding_func, path):
@@ -149,16 +163,18 @@ def access_vector_database_retriever(embedding_func, path):
         similarity search reciever
     """
     
-    vector_store = Chroma(
-        embedding_function= embedding_func(),
-        persist_directory= path
-    )
+    try:
+        vector_store = Chroma(
+            embedding_function= embedding_func(),
+            persist_directory= path
+        )
 
-    retriever = vector_store.as_retriever(search_type = "similarity")
-    
-    return retriever
-
-
+        retriever = vector_store.as_retriever(search_type = "similarity")
+        
+        return retriever
+    except Exception as e:
+        print(f"Something went wrong in vector database accessing process.. {e}")
+        return None
 
 def prompt_maker(question, documents):
     template = """
@@ -168,14 +184,16 @@ def prompt_maker(question, documents):
     related documents : {documents}
     """
 
-    prompt_template = ChatPromptTemplate.from_template(template)
-    prompt = prompt_template.invoke({
-        "question" : question,
-        "documents" : documents
-    })
+    try:
+        prompt_template = ChatPromptTemplate.from_template(template)
+        prompt = prompt_template.invoke({
+            "question" : question,
+            "documents" : documents
+        })
 
-    return prompt
-
+        return prompt
+    except Exception as e:
+        print(f"Something went wrong in promt making process.. {e}")
 
 
 def ollama_connection():
@@ -201,16 +219,19 @@ def ollama_connection():
         
     except Exception as e:
         print(f"Something went wrong in llm connection process.. {e}")
-    
+        return None
 
 
 def generate_response(question, documents):
-    prompt = prompt_maker(question, documents)
-    llm = ollama_connection()
 
-    response = llm.invoke(prompt)
-    return response 
+    try:
+        prompt = prompt_maker(question, documents)
+        llm = ollama_connection()
 
+        response = llm.invoke(prompt)
+        return response 
+    except Exception as e:
+        print(f"Something went wrong in response generation process.. {e}")
 
 def UserFileUploadUI():
     """
