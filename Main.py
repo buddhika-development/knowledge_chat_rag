@@ -6,6 +6,9 @@ from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama import ChatOllama
 from langchain.prompts import ChatPromptTemplate
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 # handle the session states use to processes comes in the main process
@@ -205,9 +208,9 @@ def ollama_connection():
     """
 
     try:
-        model_name = "gemma3:1b"
-        temp = 0.7
-        base_url = "127.0.0.1:11435"
+        model_name = os.getenv("model_name")
+        temp = os.getenv("temp")
+        base_url = os.getenv("base_url")
 
         llm = ChatOllama(
             model= model_name,
